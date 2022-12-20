@@ -4,19 +4,53 @@ param project string
 param env string
 param location string = 'westeurope'
 
-var rgName = '${project}-${env}-rg'
-var lawsName = '${project}-${env}-law'
+var compositeName = '${project}-${env}'
 
-resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
-  name: rgName
+resource resGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
+  name: '${compositeName}-rg'
   location: location
 }
 
-module lawsModule './laws.bicep' = {
+module keyVault 'modules/keyVault.bicep' = {
+  name: 'kv'
+  scope: resourceGroup(resGroup.name)
+  params: {
+    location: location
+    compositeName: compositeName
+  }
+}
+
+module logAnalyticsWorkspace 'modules/logAnalytics.bicep' = {
   name: 'logs'
-  scope: resourceGroup(rg.name)
+  scope: resourceGroup(resGroup.name)
   params:{
     location: location
-    name: lawsName
+    compositeName: compositeName
+    keyVaultName: keyVault.outputs.keyVaultName
+  }
+}
+
+module containerRegistry 'modules/containerRegistry.bicep' = {
+  name: 'acr'
+  scope: resourceGroup(resGroup.name)
+  params: {
+    location: location
+    compositeName: compositeName
+    keyVaultName: keyVault.outputs.keyVaultName
+  }
+}
+
+resource kv 'Microsoft.KeyVault/vaults@2022-07-01' existing = {
+  name: keyVault.outputs.keyVaultName
+  scope: resourceGroup(resGroup.name)
+}
+module containerAppEnvironment 'modules/containerAppEnv.bicep' = {
+  name: 'appenv'
+  scope: resourceGroup(resGroup.name)
+  params: {
+    location: location
+    compositeName: compositeName
+    lawCustomerId: logAnalyticsWorkspace.outputs.customerId
+    lawSharedKeySecret: kv.getSecret('${logAnalyticsWorkspace.outputs.sharedKeySecretName}')
   }
 }
