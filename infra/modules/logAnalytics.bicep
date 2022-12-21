@@ -1,12 +1,5 @@
 param location string
 param compositeName string
-param keyVaultName string
-
-var sharedKeySecretName = 'log-analytics-shared-key'
-
-resource keyVault 'Microsoft.KeyVault/vaults@2022-07-01' existing = {
-  name: keyVaultName
-}
 
 resource law 'Microsoft.OperationalInsights/workspaces@2020-03-01-preview' = {
   name: '${compositeName}-law'
@@ -21,14 +14,3 @@ resource law 'Microsoft.OperationalInsights/workspaces@2020-03-01-preview' = {
     }
   })
 }
-
-resource sharedKeySecret 'Microsoft.KeyVault/vaults/secrets@2022-07-01' = {
-  name: sharedKeySecretName
-  parent: keyVault
-  properties: {
-    value: law.listKeys().primarySharedKey
-  }
-}
-
-output customerId string = law.properties.customerId
-output sharedKeySecretName string = sharedKeySecretName

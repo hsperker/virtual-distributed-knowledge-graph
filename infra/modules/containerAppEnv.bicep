@@ -1,9 +1,9 @@
 param location string
 param compositeName string
-param lawCustomerId string
-@secure()
-param lawSharedKeySecret string
 
+resource laws 'Microsoft.OperationalInsights/workspaces@2022-10-01' existing = {
+  name: '${compositeName}-law'
+}
 
 resource env 'Microsoft.App/managedEnvironments@2022-03-01' = {
   name: '${compositeName}-appenv'
@@ -12,8 +12,8 @@ resource env 'Microsoft.App/managedEnvironments@2022-03-01' = {
     appLogsConfiguration: {
       destination: 'log-analytics'
       logAnalyticsConfiguration: {
-        customerId: lawCustomerId
-        sharedKey: lawSharedKeySecret
+        customerId: laws.properties.customerId
+        sharedKey: laws.listKeys().primarySharedKey 
       }
     }
   }

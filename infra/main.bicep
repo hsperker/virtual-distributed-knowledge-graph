@@ -26,7 +26,6 @@ module logAnalyticsWorkspace 'modules/logAnalytics.bicep' = {
   params:{
     location: location
     compositeName: compositeName
-    keyVaultName: keyVault.outputs.keyVaultName
   }
 }
 
@@ -40,17 +39,11 @@ module containerRegistry 'modules/containerRegistry.bicep' = {
   }
 }
 
-resource kv 'Microsoft.KeyVault/vaults@2022-07-01' existing = {
-  name: keyVault.outputs.keyVaultName
-  scope: resourceGroup(resGroup.name)
-}
 module containerAppEnvironment 'modules/containerAppEnv.bicep' = {
   name: 'appenv'
   scope: resourceGroup(resGroup.name)
   params: {
     location: location
-    compositeName: compositeName
-    lawCustomerId: logAnalyticsWorkspace.outputs.customerId
-    lawSharedKeySecret: kv.getSecret('${logAnalyticsWorkspace.outputs.sharedKeySecretName}')
+    compositeName: compositeName 
   }
 }
