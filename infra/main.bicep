@@ -45,5 +45,6 @@ module containerAppEnvironment 'modules/containerAppEnv.bicep' = {
   params: {
     location: location
     compositeName: compositeName 
+    logAnalyticsWorkspaceName: logAnalyticsWorkspace.outputs.logAnalyticsWorkspaceName
   }
 }

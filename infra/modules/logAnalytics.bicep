@@ -14,3 +14,5 @@ resource law 'Microsoft.OperationalInsights/workspaces@2020-03-01-preview' = {
     }
   })
 }
+
+output logAnalyticsWorkspaceName string = law.name
