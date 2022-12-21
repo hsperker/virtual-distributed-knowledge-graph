@@ -20,6 +20,15 @@ module keyVault 'modules/keyVault.bicep' = {
   }
 }
 
+module storageAccount 'modules/storagAccount.bicep' = {
+  name: 'sa'
+  scope: resourceGroup(resGroup.name)
+  params: {
+    location: location
+    compositeName: compositeName
+  }
+}
+
 module logAnalyticsWorkspace 'modules/logAnalytics.bicep' = {
   name: 'logs'
   scope: resourceGroup(resGroup.name)
@@ -46,5 +55,7 @@ module containerAppEnvironment 'modules/containerAppEnv.bicep' = {
     location: location
     compositeName: compositeName 
     logAnalyticsWorkspaceName: logAnalyticsWorkspace.outputs.logAnalyticsWorkspaceName
+    storageAccountName: storageAccount.outputs.storageAccountName
+    shareName: storageAccount.outputs.shareName
   }
 }
