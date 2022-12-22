@@ -1,25 +1,5 @@
 # virtual-distributed-knowledge-graph
 
-## Infrastructure
-
-### Deployment
-
-Required parameters:
-
-- *trinoImage* the custom Trino image in the container registry to deploy
-- *postGresAdministratorLogin* the PostgreSQL admin username
-- *postGresAdministratorLoginPassword* the PostgreSQL admin password
-
-```bash
-$ az deployment sub create --location westeurope \
-    --template-file ./main.bicep \
-    --parameters \
-        @./parameters.dev.json \
-        trinoImage='vdkg01pocacr.azurecr.io/trino:2022-12-22_15-59-08' \
-        postGresAdministratorLogin='foobaruser' \
-        postGresAdministratorLoginPassword='ccb86...f1fff'
-```
-
 ## Trino
 
 ### Configuration
@@ -60,4 +40,24 @@ You might need to login to the registry at first via `docker login vdkg01pocacr.
 
 ```bash
 $ docker push vdkg01pocacr.azurecr.io/trino:2022-12-22_15-59-08
+```
+
+## Infrastructure
+
+### Deployment
+
+Required parameters:
+
+- *trinoImage* the custom Trino image in the container registry to deploy
+- *postGresAdministratorLogin* the PostgreSQL admin username
+- *postGresAdministratorLoginPassword* the PostgreSQL admin password
+
+```bash
+$ az deployment sub create --location westeurope \
+    --template-file ./main.bicep \
+    --parameters \
+        @./parameters.dev.json \
+        trinoImage='vdkg01pocacr.azurecr.io/trino:2022-12-22_15-59-08' \
+        postGresAdministratorLogin='foobaruser' \
+        postGresAdministratorLoginPassword='ccb86...f1fff'
 ```
