@@ -19,3 +19,6 @@ resource env 'Microsoft.App/managedEnvironments@2022-03-01' = {
     }
   }
 }
+
+output environmentId string = env.id
+output defaultDomain string = env.properties.defaultDomain

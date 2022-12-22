@@ -52,6 +52,4 @@ resource acrLoginServer 'Microsoft.KeyVault/vaults/secrets@2022-07-01' = {
     value: containerRegistry.properties.loginServer
   }
 }
-
-output loginServer string = containerRegistry.properties.loginServer
-output containerRegistryPrincipalId string = containerRegistry.identity.principalId
+output containerRegistryName string = containerRegistry.name
