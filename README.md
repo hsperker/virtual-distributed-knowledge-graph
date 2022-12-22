@@ -4,8 +4,14 @@
 
 ### Deployment
 
+Required parameters:
+
+- *trinoImage* the custom Trino image in the container registry to deploy
+- *postGresAdministratorLogin* the PostgreSQL admin username
+- *postGresAdministratorLoginPassword* the PostgreSQL admin password
+
 ```bash
-$ az deployment sub create --location westeurope --template-file ./main.bicep --parameters @./parameters.dev.json postGresAdministratorLogin='foobaruser' postGresAdministratorLoginPassword='ccb8...fff'
+$ az deployment sub create --location westeurope --template-file ./main.bicep --parameters @./parameters.dev.json trinoImage='vdkg01pocacr.azurecr.io/trino:2022-12-22_15-59-08' postGresAdministratorLogin='foobaruser' postGresAdministratorLoginPassword='ccb86...f1fff'
 ```
 
 ## Trino

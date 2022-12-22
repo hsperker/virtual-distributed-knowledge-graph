@@ -11,7 +11,7 @@ param postGresAdministratorLoginPassword string
 
 var compositeName = '${project}-${env}'
 
-var trinoImage = 'vdkg01pocacr.azurecr.io/trino:2022-12-22_15-59-08'
+param trinoImage string
 var trinoCoordinatorName = 'trino-coordinator'
 var trinoWorkerName = 'trino-worker'
 
