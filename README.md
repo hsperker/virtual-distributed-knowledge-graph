@@ -11,7 +11,13 @@ Required parameters:
 - *postGresAdministratorLoginPassword* the PostgreSQL admin password
 
 ```bash
-$ az deployment sub create --location westeurope --template-file ./main.bicep --parameters @./parameters.dev.json trinoImage='vdkg01pocacr.azurecr.io/trino:2022-12-22_15-59-08' postGresAdministratorLogin='foobaruser' postGresAdministratorLoginPassword='ccb86...f1fff'
+$ az deployment sub create --location westeurope \
+    --template-file ./main.bicep \
+    --parameters \
+        @./parameters.dev.json \
+        trinoImage='vdkg01pocacr.azurecr.io/trino:2022-12-22_15-59-08' \
+        postGresAdministratorLogin='foobaruser' \
+        postGresAdministratorLoginPassword='ccb86...f1fff'
 ```
 
 ## Trino
