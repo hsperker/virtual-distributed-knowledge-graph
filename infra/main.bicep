@@ -4,8 +4,14 @@ param project string
 param env string
 param location string = 'westeurope'
 
+param postGresAdministratorLogin string
+
+@secure()
+param postGresAdministratorLoginPassword string
+
 var compositeName = '${project}-${env}'
 
+var trinoImage = 'vdkg01pocacr.azurecr.io/trino:2022-12-22_15-59-08'
 var trinoCoordinatorName = 'trino-coordinator'
 var trinoWorkerName = 'trino-worker'
 
@@ -51,6 +57,18 @@ module containerRegistry 'modules/containerRegistry.bicep' = {
   }
 }
 
+module postgreDb 'modules/postgreSQL.bicep' = {
+  name: 'postgreDB'
+  scope: resourceGroup(resGroup.name)
+  params: {
+    location: location
+    compositeName: compositeName
+    keyVaultName: keyVault.outputs.keyVaultName
+    administratorLogin: postGresAdministratorLogin
+    administratorLoginPassword: postGresAdministratorLoginPassword
+  }
+}
+
 module containerAppEnvironment 'modules/containerAppEnv.bicep' = {
   name: 'appenv'
   scope: resourceGroup(resGroup.name)
@@ -76,7 +94,7 @@ module trinoCoordinatorContainerApp 'modules/containerApp.bicep' = {
     containers: [
       {
       name: trinoCoordinatorName
-      image: 'vdkg01pocacr.azurecr.io/trino:2022-12-22_09-21-40'
+      image: trinoImage
       env: [
           {
             name: 'TRINO_NODE_TYPE'
@@ -84,7 +102,19 @@ module trinoCoordinatorContainerApp 'modules/containerApp.bicep' = {
           }
           {
             name: 'TRINO_DISCOVERY_URI'
-            value: 'https://${trinoCoordinatorName}${containerAppEnvironment.outputs.defaultDomain}'
+            value: 'https://${trinoCoordinatorName}.${containerAppEnvironment.outputs.defaultDomain}'
+          }
+          {
+            name: 'POSTGRES_CONNECTION_JDBC_URL'
+            value: 'jdbc:postgresql://${postgreDb.outputs.fqdn}:5432/employees_database'
+          }
+          {
+            name: 'POSTGRES_CONNECTION_USER'
+            value: '${postGresAdministratorLogin}@${postgreDb.outputs.name}'
+          }
+          {
+            name: 'POSTGRES_CONNECTION_PASSWORD'
+            value: postGresAdministratorLoginPassword
           }
         ]
       }
@@ -105,7 +135,7 @@ module trinoWorkerContainerApp 'modules/containerApp.bicep' = {
     containers: [
       {
       name: trinoWorkerName
-      image: 'vdkg01pocacr.azurecr.io/trino:2022-12-22_09-21-40'
+      image: trinoImage
       env: [
           {
             name: 'TRINO_NODE_TYPE'
@@ -113,7 +143,7 @@ module trinoWorkerContainerApp 'modules/containerApp.bicep' = {
           }
           {
             name: 'TRINO_DISCOVERY_URI'
-            value: 'https://${trinoCoordinatorName}${containerAppEnvironment.outputs.defaultDomain}'
+            value: 'https://${trinoCoordinatorName}.${containerAppEnvironment.outputs.defaultDomain}'
           }
         ]
       }

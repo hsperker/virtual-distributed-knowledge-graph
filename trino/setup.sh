@@ -1,6 +1,20 @@
 #!/bin/bash
 set -e
 
+POSTGRESQL_ENVS=0
+if [ ! -z "${POSTGRES_CONNECTION_JDBC_URL}" ] || \
+[ ! -z "${POSTGRES_CONNECTION_USER}" ] || \
+[ ! -z "${POSTGRES_CONNECTION_PASSWORD}" ]; then
+  POSTGRESQL_ENVS=1
+  export POSTGRES_CONNECTION_JDBC_URL=${POSTGRES_CONNECTION_JDBC_URL}
+  export POSTGRES_CONNECTION_USER=${POSTGRES_CONNECTION_USER}
+  export POSTGRES_CONNECTION_PASSWORD=${POSTGRES_CONNECTION_PASSWORD}
+fi
+
+if [ -f /tmp/catalog/postgresql.properties.template ] && [ $POSTGRESQL_ENVS -eq 1 ]; then
+  envsubst < /tmp/catalog/postgresql.properties.template > /etc/trino/catalog/postgresql.properties
+fi
+
 export TRINO_NODE_ID=$(uuidgen)
 echo "TRINO_NODE_ID=$TRINO_NODE_ID"
 envsubst < /tmp/trino.node.properties.template > /etc/trino/node.properties

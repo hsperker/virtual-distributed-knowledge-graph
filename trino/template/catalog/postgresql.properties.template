@@ -1,0 +1,4 @@
+connector.name=postgresql
+connection-url=${POSTGRES_CONNECTION_JDBC_URL}
+connection-user=${POSTGRES_CONNECTION_USER}
+connection-password=${POSTGRES_CONNECTION_PASSWORD}
