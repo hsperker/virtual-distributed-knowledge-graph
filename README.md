@@ -1,5 +1,14 @@
 # virtual-distributed-knowledge-graph
 
+## Currently Open Topics
+
+- [ ] When run for the first time an empty Azure Container Registry is created but bicep tries to deploy container apps e.g. Trino from this acr. \
+  *Workaround:* Let the first infra deploy fail, build and publish container, rerun infa deployment
+- [ ] The PostgreSQL database is created empty but Trino currently expects an employees_database. \
+  *Workaround:* After the initial deployment of the database geht required dummy data from https://github.com/h8/employees-database and import it into the database. This requires to add the local IP to the database firewall to allow access.
+- [ ] Trino currently does not have access to the database due to firewall restrictions. \
+  *Workaround:* Add worker IPs to the firewall.
+
 ## Trino
 
 ### Configuration

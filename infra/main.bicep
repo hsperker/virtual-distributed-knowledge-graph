@@ -92,6 +92,12 @@ module trinoCoordinatorContainerApp 'modules/containerApp.bicep' = {
     minReplicas: 1
     isExternal: true
     targetPort: 8080
+    secrets: {secrets: [
+      {
+        name: 'postgres-connection-password'
+        value: postGresAdministratorLoginPassword
+      }
+    ]}
     containers: [
       {
         name: trinoCoordinatorName
@@ -115,7 +121,7 @@ module trinoCoordinatorContainerApp 'modules/containerApp.bicep' = {
           }
           {
             name: 'POSTGRES_CONNECTION_PASSWORD'
-            value: postGresAdministratorLoginPassword
+            value: 'postgres-connection-password'
           }
         ]
       }
@@ -134,20 +140,38 @@ module trinoWorkerContainerApp 'modules/containerApp.bicep' = {
     minReplicas: 3
     isExternal: true
     targetPort: 8080
+    secrets: {secrets: [
+      {
+        name: 'postgres-connection-password'
+        value: postGresAdministratorLoginPassword
+      }
+    ]}
     containers: [
       {
       name: trinoWorkerName
       image: trinoImage
       env: [
-          {
-            name: 'TRINO_NODE_TYPE'
+        {
+          name: 'TRINO_NODE_TYPE'
             value: 'worker'
-          }
-          {
-            name: 'TRINO_DISCOVERY_URI'
-            value: 'https://${trinoCoordinatorName}.${containerAppEnvironment.outputs.defaultDomain}'
-          }
-        ]
+        }
+        {
+          name: 'TRINO_DISCOVERY_URI'
+          value: 'https://${trinoCoordinatorName}.${containerAppEnvironment.outputs.defaultDomain}'
+        }
+        {
+          name: 'POSTGRES_CONNECTION_JDBC_URL'
+          value: 'jdbc:postgresql://${postgreDb.outputs.fqdn}:5432/employees_database'
+        }
+        {
+          name: 'POSTGRES_CONNECTION_USER'
+          value: '${postGresAdministratorLogin}@${postgreDb.outputs.name}'
+        }
+        {
+          name: 'POSTGRES_CONNECTION_PASSWORD'
+          value: 'postgres-connection-password'
+        }
+      ]
       }
     ]
   }
