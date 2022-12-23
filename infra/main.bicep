@@ -89,13 +89,14 @@ module trinoCoordinatorContainerApp 'modules/containerApp.bicep' = {
     containerAppName: trinoCoordinatorName
     containerAppEnvId: containerAppEnvironment.outputs.environmentId
     containerRegistryName: containerRegistry.outputs.containerRegistryName
+    minReplicas: 1
     isExternal: true
     targetPort: 8080
     containers: [
       {
-      name: trinoCoordinatorName
-      image: trinoImage
-      env: [
+        name: trinoCoordinatorName
+        image: trinoImage
+        env: [
           {
             name: 'TRINO_NODE_TYPE'
             value: 'coordinator'
@@ -130,6 +131,7 @@ module trinoWorkerContainerApp 'modules/containerApp.bicep' = {
     containerAppName: trinoWorkerName
     containerAppEnvId: containerAppEnvironment.outputs.environmentId
     containerRegistryName: containerRegistry.outputs.containerRegistryName
+    minReplicas: 3
     isExternal: true
     targetPort: 8080
     containers: [

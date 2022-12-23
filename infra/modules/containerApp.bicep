@@ -5,6 +5,9 @@ param containerAppEnvId string
 
 param containerRegistryName string
 
+param minReplicas int = 0
+param maxReplicas int = 30
+
 param isExternal bool
 param targetPort int
 param containers array
@@ -49,8 +52,8 @@ resource containerApp 'Microsoft.App/containerApps@2022-03-01' = {
     template: {
       containers: containers
       scale: {
-        minReplicas: 0
-        maxReplicas: 30
+        minReplicas: minReplicas
+        maxReplicas: maxReplicas
         rules: [
           {
             name: 'http-rule'
