@@ -9,6 +9,14 @@ param administratorLogin string
 @secure()
 param administratorLoginPassword string
 
+var firewallrules = [
+  {
+    Name: 'rule1'
+    StartIpAddress: '0.0.0.0'
+    EndIpAddress: '255.255.255.255'
+  }
+]
+
 
 resource keyVault 'Microsoft.KeyVault/vaults@2022-07-01' existing = {
   name: keyVaultName
@@ -53,6 +61,15 @@ resource server 'Microsoft.DBforPostgreSQL/servers@2017-12-01' = {
     publicNetworkAccess: 'Enabled'
   }
 }
+
+@batchSize(1)
+resource firewallRules 'Microsoft.DBforPostgreSQL/servers/firewallRules@2017-12-01' = [for rule in firewallrules: {
+  name: '${server.name}/${rule.Name}'
+  properties: {
+    startIpAddress: rule.StartIpAddress
+    endIpAddress: rule.EndIpAddress
+  }
+}]
 
 output name string = server.name
 output fqdn string = server.properties.fullyQualifiedDomainName
