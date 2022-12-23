@@ -1,5 +1,9 @@
 # virtual-distributed-knowledge-graph
 
+## Deployment View
+
+![Deployment View](docs/architecture-Deployment.drawio.png)
+
 ## Currently Open Tasks
 
 - [x] First working deployment of Trino cluster with one SQL connector 
