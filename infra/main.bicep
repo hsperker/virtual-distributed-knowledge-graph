@@ -92,12 +92,6 @@ module trinoCoordinatorContainerApp 'modules/containerApp.bicep' = {
     minReplicas: 1
     isExternal: true
     targetPort: 8080
-    secrets: {secrets: [
-      {
-        name: 'postgres-connection-password'
-        value: postGresAdministratorLoginPassword
-      }
-    ]}
     containers: [
       {
         name: trinoCoordinatorName
@@ -121,7 +115,7 @@ module trinoCoordinatorContainerApp 'modules/containerApp.bicep' = {
           }
           {
             name: 'POSTGRES_CONNECTION_PASSWORD'
-            value: 'postgres-connection-password'
+            value: postGresAdministratorLoginPassword
           }
         ]
       }
@@ -140,12 +134,6 @@ module trinoWorkerContainerApp 'modules/containerApp.bicep' = {
     minReplicas: 3
     isExternal: true
     targetPort: 8080
-    secrets: {secrets: [
-      {
-        name: 'postgres-connection-password'
-        value: postGresAdministratorLoginPassword
-      }
-    ]}
     containers: [
       {
       name: trinoWorkerName
@@ -169,7 +157,7 @@ module trinoWorkerContainerApp 'modules/containerApp.bicep' = {
         }
         {
           name: 'POSTGRES_CONNECTION_PASSWORD'
-          value: 'postgres-connection-password'
+          value: postGresAdministratorLoginPassword
         }
       ]
       }

@@ -12,8 +12,6 @@ param isExternal bool
 param targetPort int
 param containers array
 
-@secure()
-param secrets object = {secrets: []}
 
 resource containerRegistry 'Microsoft.ContainerRegistry/registries@2022-02-01-preview' existing = {
   name: containerRegistryName
@@ -38,12 +36,12 @@ resource containerApp 'Microsoft.App/containerApps@2022-03-01' = {
           }
         ]
       }
-      secrets: union(secrets.secrets, [
+      secrets: [
         {
           name: 'container-registry-password'
           value: containerRegistry.listCredentials().passwords[0].value
         }
-      ])
+      ]
       registries: [
         {
           server: containerRegistry.properties.loginServer
