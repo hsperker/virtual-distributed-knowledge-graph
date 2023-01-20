@@ -15,6 +15,12 @@ param trinoImage string
 var trinoCoordinatorName = 'trino-coordinator'
 var trinoWorkerName = 'trino-worker'
 
+param h2Image string
+var h2Name = 'h2-sample-db'
+
+param ontopImage string
+var ontopName = 'ontop-endpoint'
+
 resource resGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   name: '${compositeName}-rg'
   location: location
@@ -160,6 +166,51 @@ module trinoWorkerContainerApp 'modules/containerApp.bicep' = {
           value: postGresAdministratorLoginPassword
         }
       ]
+      }
+    ]
+  }
+}
+
+
+module h2SampleContainerApp 'modules/containerApp.bicep' = {
+  name: 'h2Sample'
+  scope: resourceGroup(resGroup.name)
+  params: {
+    location: location
+    containerAppName: h2Name
+    containerAppEnvId: containerAppEnvironment.outputs.environmentId
+    containerRegistryName: containerRegistry.outputs.containerRegistryName
+    minReplicas: 1
+    isExternal: true
+    targetPort: 9092
+    containers: [
+      {
+        name: h2Name
+        image: h2Image
+        env: [
+        ]
+      }
+    ]
+  }
+}
+
+module ontopContainerApp 'modules/containerApp.bicep' = {
+  name: 'ontop'
+  scope: resourceGroup(resGroup.name)
+  params: {
+    location: location
+    containerAppName: ontopName
+    containerAppEnvId: containerAppEnvironment.outputs.environmentId
+    containerRegistryName: containerRegistry.outputs.containerRegistryName
+    minReplicas: 1
+    isExternal: true
+    targetPort: 8080
+    containers: [
+      {
+        name: ontopName
+        image: ontopImage
+        env: [
+        ]
       }
     ]
   }

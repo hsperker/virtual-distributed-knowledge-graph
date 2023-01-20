@@ -96,6 +96,54 @@ trino> select * from postgresql.employees.employee;
 
 Abort the query by pressing `q`, exit Trino via `exit` command.
 
+## H2 Sample Database
+
+### Preparing The Custom H2 Image
+
+#### Building the H2 image
+
+In the `h2` folder execute the following command to build the custom Trino image manually.
+
+```bash
+$ docker build --platform=linux/amd64 -t vdkg01pocacr.azurecr.io/h2:$(date +"%Y-%m-%d_%H-%M-%S") .
+```
+
+This will create an image like the following `vdkg01pocacr.azurecr.io/h2:2022-12-22_15-59-08` with the build timestamp at the end.
+
+#### Publishing the H2 image
+
+To publish the custom Trino to the container registry execute the following command.
+
+You might need to login to the registry at first via `docker login vdkg01pocacr.azurecr.io`
+
+```bash
+$ docker push vdkg01pocacr.azurecr.io/h2:2023-01-16_12-02-32
+```
+
+
+## ontop endpoint
+
+### Preparing The Custom ontop Image
+
+#### Building the ontop image
+
+In the `h2` folder execute the following command to build the custom Trino image manually.
+
+```bash
+$ docker build --platform=linux/amd64 -t vdkg01pocacr.azurecr.io/h2:$(date +"%Y-%m-%d_%H-%M-%S") .
+```
+
+This will create an image like the following `vdkg01pocacr.azurecr.io/h2:2022-12-22_15-59-08` with the build timestamp at the end.
+
+#### Publishing the Hontop2 image
+
+To publish the custom ontop to the container registry execute the following command.
+
+You might need to login to the registry at first via `docker login vdkg01pocacr.azurecr.io`
+
+```bash
+$ docker push vdkg01pocacr.azurecr.io/ontop:2023-01-19_17-18-29
+```
 ## Infrastructure
 
 ### Deployment
@@ -111,7 +159,12 @@ $ az deployment sub create --location westeurope \
     --template-file ./main.bicep \
     --parameters \
         @./parameters.dev.json \
+        h2Image='vdkg01pocacr.azurecr.io/h2:2023-01-16_12-02-32' \
+        ontopImage='vdkg01pocacr.azurecr.io/ontop:2023-01-19_17-18-29' \
         trinoImage='vdkg01pocacr.azurecr.io/trino:2022-12-22_15-59-08' \
         postGresAdministratorLogin='foobaruser' \
+        postGresAdministratorLoginPassword='ccb86065-a635-432b-b704-d41d2b7f1fff'
         postGresAdministratorLoginPassword='ccb86...f1fff'
+'
+
 ```
