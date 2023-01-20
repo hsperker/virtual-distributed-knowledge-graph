@@ -6,11 +6,11 @@
 
 ## Currently Open Tasks
 
-- [x] First working deployment of Trino cluster with one SQL connector 
-- [ ] First working deployment of ontop-vkg 
+- [x] First working deployment of Trino cluster with one SQL connector
+- [ ] First working deployment of ontop-vkg
 - [ ] Add further, different connectors to Trino
 - [ ] Use Purview to model ontology of data present in the different data sources
-- [ ] Map Purview ontology to RDF 
+- [ ] Map Purview ontology to RDF
 - [ ] Create R2RML mapping for ontop-vkg
 - [ ] Connection of ontop-vkg to Trino coordinator / cluster
 
@@ -19,9 +19,9 @@
 - [ ] When run for the first time an empty Azure Container Registry is created but bicep tries to deploy container apps e.g. Trino from this acr. \
   *Workaround:* Let the first infra deploy fail, build and publish container, rerun infa deployment
 - [ ] The PostgreSQL database is created empty but Trino currently expects an employees_database. \
-  *Workaround:* After the initial deployment of the database geht required dummy data from https://github.com/h8/employees-database and import it into the database.
+  *Workaround:* After the initial deployment of the database geht required dummy data from <https://github.com/h8/employees-database> and import it into the database.
 - [ ] The PostgreSQL server firewall currently allows access from everywhere (0.0.0.0 - 255.255.255.255). This currently allows Trino workers and local hosts to access the database.
-- [ ] The container apps currently consume the PostgreSQL password via regular container environment parameters. This should be changed to proper secrets like https://learn.microsoft.com/en-us/azure/container-apps/manage-secrets?tabs=arm-template.
+- [ ] The container apps currently consume the PostgreSQL password via regular container environment parameters. This should be changed to proper secrets like <https://learn.microsoft.com/en-us/azure/container-apps/manage-secrets?tabs=arm-template>.
 
 ## Trino
 
@@ -38,19 +38,17 @@ Trino is configured by the following means:
   This script is executed by the container upon deployment, consumes environment variables and uses those to substitute template variables and to copy the template files into the proper location for Trino to use.
   The Templates use the *${VARIABLE}* pattern which is exchanged to proper values via the `envsubst` command.
 
-
-
-
 ### Preparing The Custom Trino Image
 
 For this documentation it is assumed that your container registry can be found under `vdkg01pocacr.azurecr.io`. \
 If that's not the case please change all the references to the correct host.
 
-#### Building 
+#### Building
+
 In the `trino` folder execute the following command to build the custom Trino image manually.
 
 ```bash
-$ docker build --platform=linux/amd64 -t vdkg01pocacr.azurecr.io/trino:$(date +"%Y-%m-%d_%H-%M-%S") .
+docker build --platform=linux/amd64 -t vdkg01pocacr.azurecr.io/trino:$(date +"%Y-%m-%d_%H-%M-%S") .
 ```
 
 This will create an image like the following `vdkg01pocacr.azurecr.io/trino:2022-12-22_15-59-08` with the build timestamp at the end.
@@ -62,18 +60,19 @@ To publish the custom Trino to the container registry execute the following comm
 You might need to login to the registry at first via `docker login vdkg01pocacr.azurecr.io`
 
 ```bash
-$ docker push vdkg01pocacr.azurecr.io/trino:2022-12-22_15-59-08
+docker push vdkg01pocacr.azurecr.io/trino:2022-12-22_15-59-08
 ```
 
 ### Testing Trino
 
-Get the command line client from https://trino.io/download.html.
+Get the command line client from <https://trino.io/download.html>.
 
 Execute the following command to connect to the Trino coordinator `./trino --server https://trino-coordinator.livelyisland-145ff88b.westeurope.azurecontainerapps.io` this will give you the prompt `trino>`.
 
 Query the dummy data with `select * from postgresql.employees.employee;`.
 
 See the following example:
+
 ```bash
 $ ./trino --server https://trino-coordinator.livelyisland-145ff88b.westeurope.azurecontainerapps.io
 trino> select * from postgresql.employees.employee;
@@ -105,7 +104,7 @@ Abort the query by pressing `q`, exit Trino via `exit` command.
 In the `h2` folder execute the following command to build the custom Trino image manually.
 
 ```bash
-$ docker build --platform=linux/amd64 -t vdkg01pocacr.azurecr.io/h2:$(date +"%Y-%m-%d_%H-%M-%S") .
+docker build --platform=linux/amd64 -t vdkg01pocacr.azurecr.io/h2:$(date +"%Y-%m-%d_%H-%M-%S") .
 ```
 
 This will create an image like the following `vdkg01pocacr.azurecr.io/h2:2022-12-22_15-59-08` with the build timestamp at the end.
@@ -117,9 +116,8 @@ To publish the custom Trino to the container registry execute the following comm
 You might need to login to the registry at first via `docker login vdkg01pocacr.azurecr.io`
 
 ```bash
-$ docker push vdkg01pocacr.azurecr.io/h2:2023-01-16_12-02-32
+docker push vdkg01pocacr.azurecr.io/h2:2023-01-16_12-02-32
 ```
-
 
 ## ontop endpoint
 
@@ -130,7 +128,7 @@ $ docker push vdkg01pocacr.azurecr.io/h2:2023-01-16_12-02-32
 In the `h2` folder execute the following command to build the custom Trino image manually.
 
 ```bash
-$ docker build --platform=linux/amd64 -t vdkg01pocacr.azurecr.io/h2:$(date +"%Y-%m-%d_%H-%M-%S") .
+docker build --platform=linux/amd64 -t vdkg01pocacr.azurecr.io/h2:$(date +"%Y-%m-%d_%H-%M-%S") .
 ```
 
 This will create an image like the following `vdkg01pocacr.azurecr.io/h2:2022-12-22_15-59-08` with the build timestamp at the end.
@@ -142,8 +140,9 @@ To publish the custom ontop to the container registry execute the following comm
 You might need to login to the registry at first via `docker login vdkg01pocacr.azurecr.io`
 
 ```bash
-$ docker push vdkg01pocacr.azurecr.io/ontop:2023-01-19_17-18-29
+docker push vdkg01pocacr.azurecr.io/ontop:2023-01-19_17-18-29
 ```
+
 ## Infrastructure
 
 ### Deployment
