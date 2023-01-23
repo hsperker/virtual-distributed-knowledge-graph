@@ -4,6 +4,8 @@ param project string
 param env string
 param location string = 'westeurope'
 
+param deployApplications bool = false
+
 param postGresAdministratorLogin string
 
 @secure()
@@ -11,19 +13,28 @@ param postGresAdministratorLoginPassword string
 
 var compositeName = '${project}-${env}'
 
-param trinoImage string
+param trinoImage string = ''
 var trinoCoordinatorName = 'trino-coordinator'
 var trinoWorkerName = 'trino-worker'
 
-param h2Image string
+param h2Image string = ''
 var h2Name = 'h2-sample-db'
 
-param ontopImage string
+param ontopImage string = ''
 var ontopName = 'ontop-endpoint'
 
 resource resGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   name: '${compositeName}-rg'
   location: location
+}
+
+module virtualNetwork 'modules/vnet.bicep' = {
+  name: 'vnet'
+  scope: resourceGroup(resGroup.name)
+  params: {
+    location: location
+    compositeName: compositeName
+  }
 }
 
 module keyVault 'modules/keyVault.bicep' = {
@@ -63,7 +74,7 @@ module containerRegistry 'modules/containerRegistry.bicep' = {
   }
 }
 
-module postgreDb 'modules/postgreSQL.bicep' = {
+module postgreDb 'modules/postgreSQL.bicep' = if (!deployApplications) {
   name: 'postgreDB'
   scope: resourceGroup(resGroup.name)
   params: {
@@ -84,10 +95,11 @@ module containerAppEnvironment 'modules/containerAppEnv.bicep' = {
     logAnalyticsWorkspaceName: logAnalyticsWorkspace.outputs.logAnalyticsWorkspaceName
     storageAccountName: storageAccount.outputs.storageAccountName
     shareName: storageAccount.outputs.shareName
+    virtualNetworkInfrastructureSubnetId: virtualNetwork.outputs.virtualNetworkInfrastructureSubnetId
   }
 }
 
-module trinoCoordinatorContainerApp 'modules/containerApp.bicep' = {
+module trinoCoordinatorContainerApp 'modules/containerApp.bicep' = if (deployApplications) {
   name: 'trinoCoordinator'
   scope: resourceGroup(resGroup.name)
   params: {
@@ -129,7 +141,7 @@ module trinoCoordinatorContainerApp 'modules/containerApp.bicep' = {
   }
 }
 
-module trinoWorkerContainerApp 'modules/containerApp.bicep' = {
+module trinoWorkerContainerApp 'modules/containerApp.bicep' = if (deployApplications) {
   name: 'trinoWorker'
   scope: resourceGroup(resGroup.name)
   params: {
@@ -172,7 +184,7 @@ module trinoWorkerContainerApp 'modules/containerApp.bicep' = {
 }
 
 
-module h2SampleContainerApp 'modules/containerApp.bicep' = {
+module h2SampleContainerApp 'modules/containerApp.bicep' = if (deployApplications) {
   name: 'h2Sample'
   scope: resourceGroup(resGroup.name)
   params: {
@@ -194,7 +206,7 @@ module h2SampleContainerApp 'modules/containerApp.bicep' = {
   }
 }
 
-module ontopContainerApp 'modules/containerApp.bicep' = {
+module ontopContainerApp 'modules/containerApp.bicep' = if (deployApplications) {
   name: 'ontop'
   scope: resourceGroup(resGroup.name)
   params: {

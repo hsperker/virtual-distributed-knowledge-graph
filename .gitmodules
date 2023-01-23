@@ -1,0 +1,3 @@
+[submodule "employees-database"]
+	path = employees-database
+	url = https://github.com/h8/employees-database

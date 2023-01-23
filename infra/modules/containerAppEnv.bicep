@@ -3,6 +3,7 @@ param compositeName string
 param logAnalyticsWorkspaceName string
 param storageAccountName string
 param shareName string
+param virtualNetworkInfrastructureSubnetId string
 
 resource laws 'Microsoft.OperationalInsights/workspaces@2022-10-01' existing = {
   name: logAnalyticsWorkspaceName
@@ -21,6 +22,10 @@ resource env 'Microsoft.App/managedEnvironments@2022-03-01' = {
         customerId: laws.properties.customerId
         sharedKey: laws.listKeys().primarySharedKey 
       }
+    }
+    vnetConfiguration: {
+      internal: false
+      infrastructureSubnetId: virtualNetworkInfrastructureSubnetId
     }
   }
   
