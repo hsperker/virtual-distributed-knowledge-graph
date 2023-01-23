@@ -23,6 +23,62 @@
 - [ ] The PostgreSQL server firewall currently allows access from everywhere (0.0.0.0 - 255.255.255.255). This currently allows Trino workers and local hosts to access the database.
 - [ ] The container apps currently consume the PostgreSQL password via regular container environment parameters. This should be changed to proper secrets like <https://learn.microsoft.com/en-us/azure/container-apps/manage-secrets?tabs=arm-template>.
 
+## Infrastructure Preparation
+
+### Initial Deployment
+
+Required parameters (for this stage):
+
+- *postGresAdministratorLogin* the PostgreSQL admin username
+- *postGresAdministratorLoginPassword* the PostgreSQL admin password
+
+```bash
+$ az deployment sub create --location westeurope \
+    --template-file ./main.bicep \
+    --parameters \
+        @./parameters.dev.json \
+        postGresAdministratorLogin='adminUser' \
+        postGresAdministratorLoginPassword='ccb86...f1fff'
+```
+
+### Data Provisioning
+
+Connect to the Postgres DB and create `employees_database` database.
+```
+$ psql --host=vdkg-01-poc-pdb.postgres.database.azure.com \
+    --port=5432 \
+    --username=adminUser@vdkg-01-poc-pdb \
+    --dbname=postgres \
+    --command="CREATE DATABASE employees_database;"
+```
+
+Insert records (see folder `employees-database/` which is a git submodule from https://github.com/h8/employees-database).
+
+```
+$ psql --host=vdkg-01-poc-pdb.postgres.database.azure.com \
+    --port=5432 \
+    --username=adminUser@vdkg-01-poc-pdb \
+    --dbname=employees_database < employees_data.sql
+```
+
+Select employees.
+
+```
+$ psql --host=vdkg-01-poc-pdb.postgres.database.azure.com \
+    --port=5432 \
+    --username=adminUser@vdkg-01-poc-pdb \
+    --dbname=employees_database \
+    --command="SELECT * FROM employees.employee"
+```
+
+### Docker Login to ACR
+
+Requires username and password from the Azure Key Vault!
+
+```
+docker login vdkg01pocacr.azurecr.io 
+```
+
 ## Trino
 
 ### Configuration
@@ -63,38 +119,6 @@ You might need to login to the registry at first via `docker login vdkg01pocacr.
 docker push vdkg01pocacr.azurecr.io/trino:2022-12-22_15-59-08
 ```
 
-### Testing Trino
-
-Get the command line client from <https://trino.io/download.html>.
-
-Execute the following command to connect to the Trino coordinator `./trino --server https://trino-coordinator.livelyisland-145ff88b.westeurope.azurecontainerapps.io` this will give you the prompt `trino>`.
-
-Query the dummy data with `select * from postgresql.employees.employee;`.
-
-See the following example:
-
-```bash
-$ ./trino --server https://trino-coordinator.livelyisland-145ff88b.westeurope.azurecontainerapps.io
-trino> select * from postgresql.employees.employee;
-  id   | birth_date |   first_name   |    last_name     | gender | hire_date
--------+------------+----------------+------------------+--------+------------
- 10001 | 1953-09-02 | Georgi         | Facello          | M      | 1986-06-26
- 10002 | 1964-06-02 | Bezalel        | Simmel           | F      | 1985-11-21
- 10003 | 1959-12-03 | Parto          | Bamford          | M      | 1986-08-28
- 10004 | 1954-05-01 | Chirstian      | Koblick          | M      | 1986-12-01
- 10005 | 1955-01-21 | Kyoichi        | Maliniak         | M      | 1989-09-12
- 10006 | 1953-04-20 | Anneke         | Preusig          | F      | 1989-06-02
- 10007 | 1957-05-23 | Tzvetan        | Zielinski        | F      | 1989-02-10
- 10008 | 1958-02-19 | Saniya         | Kalloufi         | M      | 1994-09-15
- 10009 | 1952-04-19 | Sumant         | Peac             | F      | 1985-02-18
- 10010 | 1963-06-01 | Duangkaew      | Piveteau         | F      | 1989-08-24
- 10040 | 1959-09-13 | Weiyi          | Meriste          | F      | 1993-02-14
- 10041 | 1959-08-27 | Uri            | Lenart           | F      | 1989-11-12
-:
-```
-
-Abort the query by pressing `q`, exit Trino via `exit` command.
-
 ## H2 Sample Database
 
 ### Preparing The Custom H2 Image
@@ -128,12 +152,12 @@ docker push vdkg01pocacr.azurecr.io/h2:2023-01-16_12-02-32
 In the `h2` folder execute the following command to build the custom Trino image manually.
 
 ```bash
-docker build --platform=linux/amd64 -t vdkg01pocacr.azurecr.io/h2:$(date +"%Y-%m-%d_%H-%M-%S") .
+docker build --platform=linux/amd64 -t vdkg01pocacr.azurecr.io/ontop:$(date +"%Y-%m-%d_%H-%M-%S") .
 ```
 
-This will create an image like the following `vdkg01pocacr.azurecr.io/h2:2022-12-22_15-59-08` with the build timestamp at the end.
+This will create an image like the following `vdkg01pocacr.azurecr.io/ontop:2022-12-22_15-59-08` with the build timestamp at the end.
 
-#### Publishing the Hontop2 image
+#### Publishing the ontop image
 
 To publish the custom ontop to the container registry execute the following command.
 
@@ -143,13 +167,14 @@ You might need to login to the registry at first via `docker login vdkg01pocacr.
 docker push vdkg01pocacr.azurecr.io/ontop:2023-01-19_17-18-29
 ```
 
-## Infrastructure
+## Infrastructure App Deployment
 
-### Deployment
+Required parameters (for this stage):
 
-Required parameters:
-
+- *deployApplications* whether or not to deploy applications 
 - *trinoImage* the custom Trino image in the container registry to deploy
+- *ontopImage* the custom ontop image in the container registry to deploy
+- *h2Image* the custom h2 image in the container registry to deploy
 - *postGresAdministratorLogin* the PostgreSQL admin username
 - *postGresAdministratorLoginPassword* the PostgreSQL admin password
 
@@ -158,12 +183,49 @@ $ az deployment sub create --location westeurope \
     --template-file ./main.bicep \
     --parameters \
         @./parameters.dev.json \
-        h2Image='vdkg01pocacr.azurecr.io/h2:2023-01-16_12-02-32' \
-        ontopImage='vdkg01pocacr.azurecr.io/ontop:2023-01-19_17-18-29' \
-        trinoImage='vdkg01pocacr.azurecr.io/trino:2022-12-22_15-59-08' \
-        postGresAdministratorLogin='foobaruser' \
-        postGresAdministratorLoginPassword='ccb86065-a635-432b-b704-d41d2b7f1fff'
+        deployApplications=true \
+        h2Image='vdkg01pocacr.azurecr.io/h2:2023-01-23_11-39-48' \
+        ontopImage='vdkg01pocacr.azurecr.io/ontop:2023-01-23_11-44-30' \
+        trinoImage='vdkg01pocacr.azurecr.io/trino:2023-01-23_11-07-58' \
+        postGresAdministratorLogin='adminUser' \
         postGresAdministratorLoginPassword='ccb86...f1fff'
-'
-
 ```
+
+## Testing
+### Testing Trino
+
+#### Command Line Client
+
+Get the command line client from <https://trino.io/download.html>.
+
+Execute the following command to connect to the Trino coordinator `./trino --server https://trino-coordinator.livelyisland-145ff88b.westeurope.azurecontainerapps.io` this will give you the prompt `trino>`.
+
+Query the dummy data with `select * from postgresql.employees.employee;`.
+
+See the following example:
+
+```bash
+$ ./trino --server https://trino-coordinator.livelyisland-145ff88b.westeurope.azurecontainerapps.io
+trino> select * from postgresql.employees.employee;
+  id   | birth_date |   first_name   |    last_name     | gender | hire_date
+-------+------------+----------------+------------------+--------+------------
+ 10001 | 1953-09-02 | Georgi         | Facello          | M      | 1986-06-26
+ 10002 | 1964-06-02 | Bezalel        | Simmel           | F      | 1985-11-21
+ 10003 | 1959-12-03 | Parto          | Bamford          | M      | 1986-08-28
+ 10004 | 1954-05-01 | Chirstian      | Koblick          | M      | 1986-12-01
+ 10005 | 1955-01-21 | Kyoichi        | Maliniak         | M      | 1989-09-12
+ 10006 | 1953-04-20 | Anneke         | Preusig          | F      | 1989-06-02
+ 10007 | 1957-05-23 | Tzvetan        | Zielinski        | F      | 1989-02-10
+ 10008 | 1958-02-19 | Saniya         | Kalloufi         | M      | 1994-09-15
+ 10009 | 1952-04-19 | Sumant         | Peac             | F      | 1985-02-18
+ 10010 | 1963-06-01 | Duangkaew      | Piveteau         | F      | 1989-08-24
+ 10040 | 1959-09-13 | Weiyi          | Meriste          | F      | 1993-02-14
+ 10041 | 1959-08-27 | Uri            | Lenart           | F      | 1989-11-12
+:
+```
+
+Abort the query by pressing `q`, exit Trino via `exit` command.
+
+#### DB Administration Tool
+
+JDBC Connection URL: `jdbc:trino://trino-coordinator.livelyisland-145ff88b.westeurope.azurecontainerapps.io:443?user=test&password=&SSL=true`

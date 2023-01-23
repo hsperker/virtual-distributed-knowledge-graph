@@ -10,6 +10,8 @@ param maxReplicas int = 30
 
 param isExternal bool
 param targetPort int
+param transport string = 'http'
+param exposedPort int = 0
 param containers array
 
 
@@ -17,7 +19,7 @@ resource containerRegistry 'Microsoft.ContainerRegistry/registries@2022-02-01-pr
   name: containerRegistryName
 }
 
-resource containerApp 'Microsoft.App/containerApps@2022-03-01' = {
+resource containerApp 'Microsoft.App/containerApps@2022-06-01-preview' = {
   name: containerAppName
   location: location
   properties: {
@@ -26,8 +28,9 @@ resource containerApp 'Microsoft.App/containerApps@2022-03-01' = {
       activeRevisionsMode: 'Single'
       ingress: {
         external: isExternal
-        transport: 'http'
+        transport: transport
         targetPort: targetPort
+        exposedPort: exposedPort
         allowInsecure: false
         traffic: [
           {
